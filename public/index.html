@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-accent="indigo" data-density="comfortable">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,13 +39,30 @@
 
       <!-- Header Quick Actions -->
       <div class="nav-actions">
+        <!-- Dashboard Accent Colors -->
+        <div class="accent-picker" title="App Theme Accent">
+          <div class="accent-dot active" data-accent="indigo" style="background: #6366f1;"></div>
+          <div class="accent-dot" data-accent="emerald" style="background: #10b981;"></div>
+          <div class="accent-dot" data-accent="cyan" style="background: #06b6d4;"></div>
+          <div class="accent-dot" data-accent="rose" style="background: #f43f5e;"></div>
+          <div class="accent-dot" data-accent="amber" style="background: #f59e0b;"></div>
+          <div class="accent-dot" data-accent="purple" style="background: #8b5cf6;"></div>
+        </div>
+
+        <!-- UI Density Toggle -->
+        <button id="density-toggle-btn" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;" title="Toggle UI Padding & Density">
+          📏 Density
+        </button>
+
         <select id="sample-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; max-width: 170px;">
           <option value="">⚡ Load Sample Demo</option>
           <option value="senior-fullstack">Alex (Sr Full Stack - High)</option>
           <option value="ml-engineer">Jordan (AI/ML Engineer)</option>
           <option value="junior-dev">Taylor (Junior - Needs Work)</option>
         </select>
-        <button id="theme-toggle-btn" class="btn-icon" title="Toggle Theme">☀️</button>
+
+        <button id="theme-toggle-btn" class="btn-icon" title="Toggle Dark/Light Mode">☀️</button>
+        
         <a href="https://github.com/gouthamisiddamsetti/ResuMind" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" title="View on GitHub">
           GitHub
         </a>
@@ -307,20 +324,86 @@
     <!-- ========================================== -->
     <section id="tab-builder" class="tab-content">
       <div class="section-header">
-        <h2>Interactive ATS Resume Builder</h2>
-        <p>Build an ATS-optimized, machine-readable resume with live real-time preview and 1-click clean PDF export.</p>
+        <h2>Interactive ATS Resume Builder & Styler</h2>
+        <p>Build an ATS-optimized, machine-readable resume with live design controls (colors, fonts, padding, line-spacing) and 1-click clean PDF export.</p>
+      </div>
+
+      <!-- Real-Time Formatting Toolbar: Color, Size, Padding, Spacing -->
+      <div class="style-toolbar">
+        <div class="style-control-row">
+          <!-- 1. Color Accent Picker -->
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span class="style-control-label">🎨 Accent Color:</span>
+            <div class="color-swatches-group">
+              <button class="resume-color-btn active" data-color="#1e3a8a" style="background: #1e3a8a;" title="Navy Blue"></button>
+              <button class="resume-color-btn" data-color="#0f172a" style="background: #0f172a;" title="Slate Black"></button>
+              <button class="resume-color-btn" data-color="#065f46" style="background: #065f46;" title="Forest Emerald"></button>
+              <button class="resume-color-btn" data-color="#881337" style="background: #881337;" title="Burgundy"></button>
+              <button class="resume-color-btn" data-color="#4f46e5" style="background: #4f46e5;" title="Royal Indigo"></button>
+              <button class="resume-color-btn" data-color="#581c87" style="background: #581c87;" title="Deep Plum"></button>
+            </div>
+            <input type="color" id="resume-custom-color" value="#1e3a8a" title="Custom Color Picker" style="width: 28px; height: 28px; padding: 0; border: none; cursor: pointer; border-radius: 4px; background: transparent;">
+          </div>
+
+          <!-- 2. Font Size Controls -->
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="style-control-label">🔤 Font Size:</span>
+            <div class="segmented-group">
+              <button class="segmented-btn btn-font-size" data-size="9.5pt" title="Compact - Fits 1 Page">Compact (9.5pt)</button>
+              <button class="segmented-btn btn-font-size active" data-size="10.5pt" title="Standard ATS Size">Normal (10.5pt)</button>
+              <button class="segmented-btn btn-font-size" data-size="11.5pt" title="Spacious Layout">Large (11.5pt)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="style-control-row">
+          <!-- 3. Page Margins & Padding -->
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="style-control-label">📐 Margins:</span>
+            <div class="segmented-group">
+              <button class="segmented-btn btn-padding" data-padding="18px 24px">Tight (0.35in)</button>
+              <button class="segmented-btn btn-padding active" data-padding="32px 38px">Normal (0.6in)</button>
+              <button class="segmented-btn btn-padding" data-padding="44px 50px">Spacious (0.9in)</button>
+            </div>
+          </div>
+
+          <!-- 4. Line Spacing / Density -->
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="style-control-label">📏 Spacing:</span>
+            <div class="segmented-group">
+              <button class="segmented-btn btn-line-height" data-line-height="1.3">1.3 Compact</button>
+              <button class="segmented-btn btn-line-height active" data-line-height="1.5">1.5 Standard</button>
+              <button class="segmented-btn btn-line-height" data-line-height="1.75">1.75 Relaxed</button>
+            </div>
+          </div>
+
+          <!-- 5. Header Alignment -->
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="style-control-label">📑 Header:</span>
+            <div class="segmented-group">
+              <button class="segmented-btn btn-align active" data-align="center">Center</button>
+              <button class="segmented-btn btn-align" data-align="left">Left</button>
+            </div>
+          </div>
+
+          <!-- 6. 1-Page Guide Toggle -->
+          <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">
+            <input type="checkbox" id="toggle-page-guide" checked>
+            <span>Show 1-Page Boundary Line</span>
+          </label>
+        </div>
       </div>
 
       <div class="grid-2">
         <!-- Builder Form Column -->
         <div class="card builder-form-col">
           <div class="card-header">
-            <h3><span>✍️</span> Resume Details</h3>
+            <h3><span>✍️</span> Resume Content</h3>
             <div style="display: flex; gap: 0.5rem;">
               <select id="builder-template-select" style="font-size: 0.8rem; padding: 0.3rem 0.5rem;">
-                <option value="modern">Modern Clean</option>
-                <option value="executive">Executive Classic</option>
-                <option value="tech">Tech Minimalist</option>
+                <option value="modern">Modern Clean (Sans)</option>
+                <option value="executive">Executive Classic (Serif)</option>
+                <option value="tech">Tech Minimalist (Mono)</option>
               </select>
             </div>
           </div>
@@ -384,7 +467,14 @@
             <h3><span>👁️</span> Real-Time ATS Preview</h3>
             <span style="font-size: 0.8rem; color: var(--success); font-weight: 600;">✓ ATS Safe Structure</span>
           </div>
-          <div id="resume-preview" class="resume-preview-container"></div>
+          
+          <div class="resume-preview-wrapper">
+            <div id="resume-preview" class="resume-preview-container"></div>
+            <!-- Visual 1-Page Height Boundary Guide -->
+            <div id="page-guide-marker" class="page-boundary-guide">
+              <span class="page-boundary-tag">End of Page 1 (11in)</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -509,6 +599,7 @@
   </footer>
 
   <!-- Application Scripts -->
+  <script src="js/confetti.js"></script>
   <script src="js/app.js"></script>
   <script src="js/analyzerView.js"></script>
   <script src="js/bulletOptimizerView.js"></script>

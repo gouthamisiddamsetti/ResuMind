@@ -1,6 +1,7 @@
 /**
  * ResuMind - Analyzer View Controller
- * Handles ATS scoring UI, SVG gauge animation, and keyword breakdown.
+ * Handles ATS scoring UI, SVG gauge animation, animated count-up numbers,
+ * celebratory confetti effects, and keyword breakdown.
  */
 
 window.AnalyzerView = {
@@ -67,6 +68,30 @@ window.AnalyzerView = {
     reader.readAsText(file);
   },
 
+  animateCounter(element, target, duration = 1200) {
+    if (!element) return;
+    const start = 0;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const currentVal = Math.round(start + (target - start) * ease);
+      element.textContent = currentVal;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        element.textContent = target;
+        element.style.animation = 'popScore 0.3s ease-out';
+      }
+    }
+
+    requestAnimationFrame(update);
+  },
+
   async runAnalysis() {
     const resumeText = document.getElementById('resume-input')?.value || '';
     const jobDescription = document.getElementById('jd-input')?.value || '';
@@ -98,6 +123,11 @@ window.AnalyzerView = {
       this.renderResults(result);
       window.ResuMind.showToast('ATS Analysis complete!', 'success');
 
+      // Trigger Confetti Celebration if ATS Score is high (>=80%)!
+      if (result.overallScore >= 80 && window.Confetti) {
+        window.Confetti.burst(110);
+      }
+
       // Scroll smoothly to results
       const resultsSection = document.getElementById('analysis-results-section');
       if (resultsSection) {
@@ -117,13 +147,16 @@ window.AnalyzerView = {
   renderResults(data) {
     window.ResuMind.state.currentAnalysis = data;
 
-    // 1. Overall Score Gauge Animation
+    // 1. Overall Score Gauge Animation & Count-up
     const scoreNum = document.getElementById('gauge-score-num');
     const gaugeProgress = document.getElementById('gauge-progress-circle');
     const badgeTier = document.getElementById('score-badge-tier');
     const scoreVerdict = document.getElementById('score-verdict-text');
 
-    if (scoreNum) scoreNum.textContent = data.overallScore;
+    if (scoreNum) {
+      this.animateCounter(scoreNum, data.overallScore, 1400);
+    }
+
     if (badgeTier) {
       badgeTier.textContent = data.tier;
       badgeTier.style.backgroundColor = data.badgeColor + '25';
@@ -146,11 +179,11 @@ window.AnalyzerView = {
     document.getElementById('stat-verb-score').textContent = `${data.breakdown.actionVerbs.score}%`;
     document.getElementById('stat-metric-score').textContent = `${data.breakdown.metricsAndImpact.score}%`;
 
-    // 3. Category Progress Bars
-    this.updateBar('bar-keywords', 'val-keywords', data.breakdown.keywordMatch.score);
-    this.updateBar('bar-verbs', 'val-verbs', data.breakdown.actionVerbs.score);
-    this.updateBar('bar-metrics', 'val-metrics', data.breakdown.metricsAndImpact.score);
-    this.updateBar('bar-structure', 'val-structure', data.breakdown.structureAndAts.score);
+    // 3. Category Progress Bars with smooth delay
+    setTimeout(() => this.updateBar('bar-keywords', 'val-keywords', data.breakdown.keywordMatch.score), 100);
+    setTimeout(() => this.updateBar('bar-verbs', 'val-verbs', data.breakdown.actionVerbs.score), 250);
+    setTimeout(() => this.updateBar('bar-metrics', 'val-metrics', data.breakdown.metricsAndImpact.score), 400);
+    setTimeout(() => this.updateBar('bar-structure', 'val-structure', data.breakdown.structureAndAts.score), 550);
 
     // 4. Keywords Tags
     this.renderKeywordTags(data.breakdown.keywordMatch);
@@ -173,7 +206,7 @@ window.AnalyzerView = {
     if (strengthsList) {
       strengthsList.innerHTML = data.strengths.map(s => `
         <li style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-          <span style="color: var(--success);">✓</span> ${s}
+          <span style="color: var(--success); font-weight: 700;">✓</span> ${s}
         </li>
       `).join('');
     }
@@ -194,7 +227,7 @@ window.AnalyzerView = {
 
     // Matched skills
     kwData.matchedSkills.forEach(s => {
-      html += `<span class="tag tag-matched" data-type="matched">✓ ${s.skill} <small>(${s.resumeFrequency}x)</small></span>`;
+      html += `<span class="tag tag-matched" data-type="matched">✓ ${s.skill} <small style="opacity:0.8;">(${s.resumeFrequency}x)</small></span>`;
     });
 
     // Missing critical skills
