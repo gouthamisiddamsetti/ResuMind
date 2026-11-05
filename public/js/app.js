@@ -1,18 +1,22 @@
 /**
  * ResuMind - Main Client Application
- * Handles tab routing, theme management, and global toast notifications.
+ * Handles tab routing, theme accent management, UI density, and global toast notifications.
  */
 
 window.ResuMind = {
   state: {
     activeTab: 'analyzer',
     theme: localStorage.getItem('resumind-theme') || 'dark',
+    accent: localStorage.getItem('resumind-accent') || 'indigo',
+    density: localStorage.getItem('resumind-density') || 'comfortable',
     sampleData: null,
     currentAnalysis: null
   },
 
   init() {
     this.applyTheme(this.state.theme);
+    this.applyAccent(this.state.accent);
+    this.applyDensity(this.state.density);
     this.bindEvents();
     this.loadSampleData();
   },
@@ -32,6 +36,33 @@ window.ResuMind = {
     this.applyTheme(nextTheme);
   },
 
+  applyAccent(accent) {
+    this.state.accent = accent;
+    document.documentElement.setAttribute('data-accent', accent);
+    localStorage.setItem('resumind-accent', accent);
+
+    document.querySelectorAll('.accent-dot').forEach(dot => {
+      dot.classList.toggle('active', dot.getAttribute('data-accent') === accent);
+    });
+  },
+
+  applyDensity(density) {
+    this.state.density = density;
+    document.documentElement.setAttribute('data-density', density);
+    localStorage.setItem('resumind-density', density);
+
+    const densityBtn = document.getElementById('density-toggle-btn');
+    if (densityBtn) {
+      densityBtn.innerHTML = density === 'compact' ? '📐 Compact' : '📏 Spaced';
+    }
+  },
+
+  toggleDensity() {
+    const nextDensity = this.state.density === 'compact' ? 'comfortable' : 'compact';
+    this.applyDensity(nextDensity);
+    this.showToast(`Switched layout to ${nextDensity} mode`, 'info');
+  },
+
   bindEvents() {
     // Nav tabs
     document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -46,6 +77,20 @@ window.ResuMind = {
     if (themeBtn) {
       themeBtn.addEventListener('click', () => this.toggleTheme());
     }
+
+    // Density toggle button
+    const densityBtn = document.getElementById('density-toggle-btn');
+    if (densityBtn) {
+      densityBtn.addEventListener('click', () => this.toggleDensity());
+    }
+
+    // Accent dots
+    document.querySelectorAll('.accent-dot').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        const accent = e.currentTarget.getAttribute('data-accent');
+        if (accent) this.applyAccent(accent);
+      });
+    });
 
     // Sample picker
     const sampleSelect = document.getElementById('sample-select');
@@ -69,7 +114,6 @@ window.ResuMind = {
       section.classList.toggle('active', section.id === `tab-${tabId}`);
     });
 
-    // Refresh tab views if needed
     if (tabId === 'tracker' && window.TrackerView) {
       window.TrackerView.fetchApplications();
     }
@@ -96,7 +140,7 @@ window.ResuMind = {
       if (resumeInput && jdInput) {
         resumeInput.value = resumes.seniorFullStack.text;
         jdInput.value = jobs.seniorFullStackJob.text;
-        this.showToast('Loaded Senior Full Stack sample! Click "Run ATS Analysis".', 'info');
+        this.showToast('Loaded Senior Full Stack sample! Click "Run ATS Analysis".', 'success');
       }
     } else if (profileKey === 'ml-engineer') {
       const resumeInput = document.getElementById('resume-input');
@@ -130,7 +174,8 @@ window.ResuMind = {
 
     setTimeout(() => {
       toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s ease';
+      toast.style.transform = 'translateY(10px)';
+      toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
     }, 4000);
   }
