@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResuMind - AI Resume Analyzer & ATS Optimizer</title>
+  <meta name="description" content="Intelligent AI-powered Resume Analyzer, ATS Score Calculator, Keyword Gap Finder, and Resume Builder.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">🧠</div>
+        <div class="logo-text">
+          <h1>ResuMind</h1>
+          <span>AI Resume Analyzer & ATS Optimizer</span>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-tab="analyzer" role="tab">
+          <span>📊</span> ATS Analyzer
+        </button>
+        <button class="nav-tab" data-tab="bullet-optimizer" role="tab">
+          <span>✨</span> Bullet Optimizer
+        </button>
+        <button class="nav-tab" data-tab="builder" role="tab">
+          <span>📝</span> ATS Builder
+        </button>
+        <button class="nav-tab" data-tab="tracker" role="tab">
+          <span>💼</span> Job Tracker
+        </button>
+      </nav>
+
+      <!-- Header Quick Actions -->
+      <div class="nav-actions">
+        <select id="sample-select" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; max-width: 170px;">
+          <option value="">⚡ Load Sample Demo</option>
+          <option value="senior-fullstack">Alex (Sr Full Stack - High)</option>
+          <option value="ml-engineer">Jordan (AI/ML Engineer)</option>
+          <option value="junior-dev">Taylor (Junior - Needs Work)</option>
+        </select>
+        <button id="theme-toggle-btn" class="btn-icon" title="Toggle Theme">☀️</button>
+        <a href="https://github.com/gouthamisiddamsetti/ResuMind" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-secondary" title="View on GitHub">
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: ATS ANALYZER                        -->
+    <!-- ========================================== -->
+    <section id="tab-analyzer" class="tab-content active">
+      <div class="section-header">
+        <h2>Intelligent ATS Resume Audit</h2>
+        <p>Benchmark your resume against any target job description. Uncover missing keywords, evaluate action verbs, and fix ATS parsing issues.</p>
+      </div>
+
+      <!-- Input Grid -->
+      <div class="grid-2" style="margin-bottom: 2rem;">
+        <!-- Resume Input Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3><span>📄</span> Your Resume Text</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Paste or Upload</span>
+          </div>
+
+          <div class="dropzone" id="resume-dropzone">
+            <div class="dropzone-icon">📁</div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Drag & drop resume (.txt, .md, text) or click to browse</div>
+            <input type="file" id="resume-file-input" accept=".txt,.md,.text" style="display: none;">
+          </div>
+
+          <textarea id="resume-input" class="input-area" placeholder="Paste your complete resume text here (Contact, Summary, Experience, Skills, Education)..."></textarea>
+        </div>
+
+        <!-- Job Description Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3><span>🎯</span> Target Job Description</h3>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Match Target</span>
+          </div>
+          <p style="font-size: 0.825rem; color: var(--text-dim); margin-bottom: 0.85rem;">
+            Paste the requirements and responsibilities of the role you are applying for.
+          </p>
+          <textarea id="jd-input" class="input-area" placeholder="Paste target job description, responsibilities, and required qualifications here..."></textarea>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <button id="btn-run-analysis" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1.1rem;">
+          ⚡ Run Deep ATS Analysis
+        </button>
+      </div>
+
+      <!-- Analysis Results Dashboard (Initially Hidden until Analyzed) -->
+      <div id="analysis-results-section" style="display: none;">
+        
+        <!-- Score Hero Card -->
+        <div class="score-hero">
+          <!-- Circular ATS Score Gauge -->
+          <div class="gauge-container">
+            <svg class="gauge-svg" viewBox="0 0 150 150">
+              <circle class="gauge-bg" cx="75" cy="75" r="65"></circle>
+              <circle id="gauge-progress-circle" class="gauge-progress" cx="75" cy="75" r="65"></circle>
+            </svg>
+            <div class="gauge-center-text">
+              <div id="gauge-score-num" class="gauge-number">0</div>
+              <div class="gauge-label">ATS Score</div>
+            </div>
+          </div>
+
+          <div class="score-details">
+            <span id="score-badge-tier" class="score-badge">Analyzing</span>
+            <div id="score-verdict-text" class="score-verdict">Generating match assessment...</div>
+            <div class="score-stats-row">
+              <div class="score-stat">
+                <div id="stat-word-count" class="score-stat-val">0</div>
+                <div class="score-stat-label">Word Count</div>
+              </div>
+              <div class="score-stat">
+                <div id="stat-matched-skills" class="score-stat-val">0</div>
+                <div class="score-stat-label">Skills Matched</div>
+              </div>
+              <div class="score-stat">
+                <div id="stat-verb-score" class="score-stat-val">0%</div>
+                <div class="score-stat-label">Action Verbs</div>
+              </div>
+              <div class="score-stat">
+                <div id="stat-metric-score" class="score-stat-val">0%</div>
+                <div class="score-stat-label">Quantified Impact</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Pillars Breakdown Grid -->
+        <div class="breakdown-grid">
+          <div class="breakdown-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                <span>🎯 Keywords & Skills Match</span>
+                <span id="val-keywords" style="color: var(--primary);">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="bar-keywords" class="progress-bar-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+              Weight: 40% of overall ATS ranking
+            </div>
+          </div>
+
+          <div class="breakdown-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                <span>⚡ Action Verbs Strength</span>
+                <span id="val-verbs" style="color: var(--accent);">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="bar-verbs" class="progress-bar-fill" style="width: 0%; background: var(--accent);"></div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+              Weight: 20% of overall ATS ranking
+            </div>
+          </div>
+
+          <div class="breakdown-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                <span>📈 Measurable Results (Metrics)</span>
+                <span id="val-metrics" style="color: var(--success);">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="bar-metrics" class="progress-bar-fill" style="width: 0%; background: var(--success);"></div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+              Weight: 20% of overall ATS ranking
+            </div>
+          </div>
+
+          <div class="breakdown-card">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                <span>📋 Format & Structure</span>
+                <span id="val-structure" style="color: var(--info);">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="bar-structure" class="progress-bar-fill" style="width: 0%; background: var(--info);"></div>
+              </div>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+              Weight: 20% of overall ATS ranking
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyword Gap Explorer -->
+        <div class="card" style="margin-bottom: 2rem;">
+          <div class="card-header">
+            <h3><span>🔍</span> Keyword Gap Analysis</h3>
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              <button class="btn btn-sm btn-secondary kw-filter-btn active" data-filter="all">All</button>
+              <button class="btn btn-sm btn-secondary kw-filter-btn" data-filter="matched">Matched</button>
+              <button class="btn btn-sm btn-secondary kw-filter-btn" data-filter="missing-critical">Missing Critical</button>
+              <button class="btn btn-sm btn-secondary kw-filter-btn" data-filter="missing-rec">Missing Recommended</button>
+            </div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Applicant Tracking Systems match keyword frequencies directly against candidate submissions. Incorporate high-frequency missing keywords naturally into your experience.
+          </p>
+          <div id="keywords-cloud" class="tag-container"></div>
+        </div>
+
+        <!-- Action Items & Wins Grid -->
+        <div class="grid-2">
+          <!-- Step-by-Step AI Action Checklist -->
+          <div class="card">
+            <div class="card-header">
+              <h3><span>🚀</span> Prioritized Optimization Steps</h3>
+            </div>
+            <div id="action-plan-list"></div>
+          </div>
+
+          <!-- Confirmed Strengths -->
+          <div class="card">
+            <div class="card-header">
+              <h3><span>🌟</span> Resume Strengths & Wins</h3>
+            </div>
+            <ul id="strengths-list" style="list-style: none; padding: 0;"></ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: AI BULLET POINT OPTIMIZER           -->
+    <!-- ========================================== -->
+    <section id="tab-bullet-optimizer" class="tab-content">
+      <div class="section-header">
+        <h2>AI Bullet Point Rewriter (STAR Framework)</h2>
+        <p>Transform ordinary, passive job descriptions into commanding, high-impact bullet points with metrics and strong action verbs.</p>
+      </div>
+
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+          <h3><span>✨</span> Input Draft Bullet Point</h3>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">
+            Select Target Role Focus:
+          </label>
+          <select id="bullet-role-select" style="max-width: 320px;">
+            <option value="Senior Full Stack Engineer">Senior Full Stack Engineer</option>
+            <option value="Frontend Architect">Frontend Architect / UI Engineer</option>
+            <option value="Backend / Cloud Infrastructure Engineer">Backend / Cloud Infrastructure Engineer</option>
+            <option value="Machine Learning / AI Engineer">Machine Learning / AI Engineer</option>
+            <option value="Engineering Manager / Tech Lead">Engineering Manager / Tech Lead</option>
+          </select>
+        </div>
+
+        <!-- 1-Click Preset Samples -->
+        <div style="margin-bottom: 1rem;">
+          <span style="font-size: 0.8rem; color: var(--text-dim); margin-right: 0.5rem;">Try an example:</span>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem;">
+            <button class="btn btn-sm btn-secondary preset-bullet-btn" data-text="Worked on website backend using Node.js and improved speed">
+              "Worked on backend..."
+            </button>
+            <button class="btn btn-sm btn-secondary preset-bullet-btn" data-text="Helped redesign user checkout flow and fixed bugs">
+              "Helped redesign checkout..."
+            </button>
+            <button class="btn btn-sm btn-secondary preset-bullet-btn" data-text="Responsible for writing unit tests and doing deployments">
+              "Responsible for writing tests..."
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <textarea id="bullet-input" class="input-area" style="height: 100px;" placeholder="e.g. Worked on website backend using Node.js and improved performance..."></textarea>
+        </div>
+
+        <button id="btn-optimize-bullet" class="btn btn-primary">
+          ✨ Generate High-Impact Rewrites
+        </button>
+      </div>
+
+      <!-- Generated Variations -->
+      <div id="bullet-variations-container"></div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: ATS RESUME BUILDER                  -->
+    <!-- ========================================== -->
+    <section id="tab-builder" class="tab-content">
+      <div class="section-header">
+        <h2>Interactive ATS Resume Builder</h2>
+        <p>Build an ATS-optimized, machine-readable resume with live real-time preview and 1-click clean PDF export.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- Builder Form Column -->
+        <div class="card builder-form-col">
+          <div class="card-header">
+            <h3><span>✍️</span> Resume Details</h3>
+            <div style="display: flex; gap: 0.5rem;">
+              <select id="builder-template-select" style="font-size: 0.8rem; padding: 0.3rem 0.5rem;">
+                <option value="modern">Modern Clean</option>
+                <option value="executive">Executive Classic</option>
+                <option value="tech">Tech Minimalist</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted);">Full Name</label>
+              <input type="text" id="builder-name">
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted);">Target Job Title</label>
+              <input type="text" id="builder-title">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <div>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Email</label>
+                <input type="email" id="builder-email">
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Phone</label>
+                <input type="text" id="builder-phone">
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <div>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Location</label>
+                <input type="text" id="builder-location">
+              </div>
+              <div>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">LinkedIn</label>
+                <input type="text" id="builder-linkedin">
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted);">GitHub / Portfolio</label>
+              <input type="text" id="builder-github">
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted);">Professional Summary</label>
+              <textarea id="builder-summary" style="height: 90px;" class="input-area"></textarea>
+            </div>
+            <div>
+              <label style="font-size: 0.8rem; color: var(--text-muted);">Skills (Comma-separated)</label>
+              <textarea id="builder-skills" style="height: 70px;" class="input-area"></textarea>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+            <button id="btn-print-resume" class="btn btn-primary" style="flex: 1;">
+              🖨️ Export / Print PDF
+            </button>
+            <button id="btn-export-json" class="btn btn-secondary">
+              💾 Export JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Preview Column -->
+        <div>
+          <div class="card-header" style="margin-bottom: 0.5rem;">
+            <h3><span>👁️</span> Real-Time ATS Preview</h3>
+            <span style="font-size: 0.8rem; color: var(--success); font-weight: 600;">✓ ATS Safe Structure</span>
+          </div>
+          <div id="resume-preview" class="resume-preview-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: JOB APPLICATION TRACKER             -->
+    <!-- ========================================== -->
+    <section id="tab-tracker" class="tab-content">
+      <div class="section-header">
+        <h2>Job Application & Interview Tracker</h2>
+        <p>Monitor your active pipeline from initial resume tailoring through recruiter screens to final offers.</p>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="breakdown-grid" style="margin-bottom: 1.5rem;">
+        <div class="breakdown-card">
+          <div class="score-stat-label">Total Applications</div>
+          <div id="stat-app-total" class="score-stat-val">0</div>
+        </div>
+        <div class="breakdown-card">
+          <div class="score-stat-label">In Interviews</div>
+          <div id="stat-app-interviewing" class="score-stat-val" style="color: var(--primary);">0</div>
+        </div>
+        <div class="breakdown-card">
+          <div class="score-stat-label">Offers Received</div>
+          <div id="stat-app-offers" class="score-stat-val" style="color: var(--success);">0</div>
+        </div>
+        <div class="breakdown-card">
+          <div class="score-stat-label">Interview Conversion Rate</div>
+          <div id="stat-app-rate" class="score-stat-val" style="color: var(--accent);">0%</div>
+        </div>
+      </div>
+
+      <!-- Add New Application Card -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-header">
+          <h3><span>➕</span> Track New Application</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+          <input type="text" id="app-new-company" placeholder="Company (e.g. Stripe, Google)">
+          <input type="text" id="app-new-role" placeholder="Job Title (e.g. Senior Software Engineer)">
+          <input type="text" id="app-new-location" placeholder="Location (e.g. Remote, San Francisco)">
+          <input type="text" id="app-new-salary" placeholder="Salary Range (e.g. $180k - $210k)">
+          <input type="number" id="app-new-score" placeholder="ATS Match %" value="85" min="0" max="100">
+          <select id="app-new-status">
+            <option value="Saved">Saved</option>
+            <option value="Applied" selected>Applied</option>
+            <option value="Interviewing">Interviewing</option>
+            <option value="Offer">Offer</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 0.75rem;">
+          <input type="text" id="app-new-notes" placeholder="Notes (e.g. Referral by John, Round 1 scheduled)">
+        </div>
+        <button id="btn-add-application" class="btn btn-primary btn-sm">
+          Add to Board
+        </button>
+      </div>
+
+      <!-- Kanban Pipeline Columns -->
+      <div class="kanban-board">
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>Saved / Backlog</span>
+            <span id="count-saved" class="tag">0</span>
+          </div>
+          <div id="kanban-col-saved"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>Applied</span>
+            <span id="count-applied" class="tag" style="background: rgba(99, 102, 241, 0.2);">0</span>
+          </div>
+          <div id="kanban-col-applied"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>Interviewing</span>
+            <span id="count-interviewing" class="tag" style="background: rgba(6, 182, 212, 0.2); color: var(--accent);">0</span>
+          </div>
+          <div id="kanban-col-interviewing"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>Offer</span>
+            <span id="count-offer" class="tag" style="background: rgba(16, 185, 129, 0.2); color: var(--success);">0</span>
+          </div>
+          <div id="kanban-col-offer"></div>
+        </div>
+
+        <div class="kanban-col">
+          <div class="kanban-col-header">
+            <span>Rejected</span>
+            <span id="count-rejected" class="tag">0</span>
+          </div>
+          <div id="kanban-col-rejected"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Global Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <strong>ResuMind</strong> &copy; 2026. Built with modern Node.js and ATS NLP engine.
+      </div>
+      <div>
+        <a href="https://github.com/gouthamisiddamsetti/ResuMind" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+          GitHub: gouthamisiddamsetti/ResuMind
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/analyzerView.js"></script>
+  <script src="js/bulletOptimizerView.js"></script>
+  <script src="js/resumeBuilderView.js"></script>
+  <script src="js/trackerView.js"></script>
+</body>
+</html>

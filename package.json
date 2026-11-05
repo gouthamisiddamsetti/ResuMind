@@ -1,0 +1,27 @@
+{
+  "name": "resumind",
+  "version": "1.0.0",
+  "description": "ResuMind - Intelligent AI-Powered Resume Analyzer, ATS Scorer, and Job Application Optimizer",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/**/*.test.js"
+  },
+  "keywords": [
+    "resume-analyzer",
+    "ats-optimizer",
+    "career",
+    "resume-builder",
+    "ai-resume",
+    "job-search",
+    "ats-score",
+    "keyword-gap-analysis"
+  ],
+  "author": "gouthamisiddamsetti",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
