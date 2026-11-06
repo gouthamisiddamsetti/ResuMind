@@ -1,0 +1,2 @@
+# ResuMind is a Node.js application and does not require Python package dependencies.
+# This file is included to satisfy environment setup requirements for tooling that expects a requirements.txt.
