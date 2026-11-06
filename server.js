@@ -18,6 +18,18 @@ const { SAMPLE_RESUMES, SAMPLE_JOB_DESCRIPTIONS } = require('./src/samples/sampl
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const APPLICATION_STATUSES = new Set(['Saved', 'Applied', 'Interviewing', 'Offer', 'Rejected']);
+const APPLICATION_FIELDS = new Set([
+  'company',
+  'role',
+  'location',
+  'salary',
+  'matchScore',
+  'status',
+  'dateApplied',
+  'notes'
+]);
+const APPLICATION_TEXT_FIELDS = new Set(['company', 'role', 'location', 'salary', 'notes']);
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -71,6 +83,63 @@ function sendJSON(res, statusCode, data) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization'
   });
   res.end(JSON.stringify(data));
+}
+
+function validateApplicationPayload(payload, partial = false) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { error: 'Request body must be a JSON object.' };
+  }
+
+  const fields = Object.keys(payload);
+  const unknownFields = fields.filter(field => !APPLICATION_FIELDS.has(field));
+  if (unknownFields.length > 0) {
+    return { error: `Unsupported application field: ${unknownFields[0]}.` };
+  }
+
+  if (fields.length === 0) {
+    return { error: 'Provide at least one application field to update.' };
+  }
+
+  if (!partial) {
+    for (const field of ['company', 'role']) {
+      if (typeof payload[field] !== 'string' || !payload[field].trim()) {
+        return { error: `${field} is required and must be a non-empty string.` };
+      }
+    }
+  }
+
+  const normalized = { ...payload };
+  for (const field of fields) {
+    const value = payload[field];
+    if (APPLICATION_TEXT_FIELDS.has(field)) {
+      if (typeof value !== 'string' || (field !== 'notes' && !value.trim())) {
+        return { error: `${field} must be ${field === 'notes' ? 'a string' : 'a non-empty string'}.` };
+      }
+      normalized[field] = field === 'notes' ? value : value.trim();
+    } else if (field === 'status') {
+      if (typeof value !== 'string' || !APPLICATION_STATUSES.has(value)) {
+        return { error: 'status must be one of Saved, Applied, Interviewing, Offer, or Rejected.' };
+      }
+    } else if (field === 'matchScore') {
+      const score = typeof value === 'string' && value.trim() ? Number(value) : value;
+      if (typeof score !== 'number' || !Number.isFinite(score) || score < 0 || score > 100) {
+        return { error: 'matchScore must be a number between 0 and 100.' };
+      }
+      normalized.matchScore = score;
+    } else if (field === 'dateApplied') {
+      const parsedDate = typeof value === 'string' ? new Date(`${value}T00:00:00.000Z`) : null;
+      if (value !== null && (
+        typeof value !== 'string' ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+        Number.isNaN(parsedDate.getTime()) ||
+        parsedDate.toISOString().slice(0, 10) !== value
+      )) {
+        return { error: 'dateApplied must be a YYYY-MM-DD date or null.' };
+      }
+    }
+  }
+
+  return { value: normalized };
 }
 
 /**
@@ -196,7 +265,9 @@ async function handleRequest(req, res) {
 
         if (method === 'POST') {
           const body = await parseRequestBody(req);
-          const newApp = dataStore.createApplication(body);
+          const validation = validateApplicationPayload(body);
+          if (validation.error) return sendJSON(res, 400, { error: validation.error });
+          const newApp = dataStore.createApplication(validation.value);
           return sendJSON(res, 201, newApp);
         }
       }
@@ -214,7 +285,9 @@ async function handleRequest(req, res) {
 
         if (method === 'PUT') {
           const body = await parseRequestBody(req);
-          const updated = dataStore.updateApplication(appId, body);
+          const validation = validateApplicationPayload(body, true);
+          if (validation.error) return sendJSON(res, 400, { error: validation.error });
+          const updated = dataStore.updateApplication(appId, validation.value);
           if (!updated) return sendJSON(res, 404, { error: 'Application not found' });
           return sendJSON(res, 200, updated);
         }

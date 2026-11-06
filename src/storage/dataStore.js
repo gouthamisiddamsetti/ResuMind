@@ -100,15 +100,16 @@ class DataStore {
   }
 
   createApplication(data) {
+    const status = data.status || 'Saved';
     const newApp = {
       id: crypto.randomUUID(),
-      company: data.company || 'Unnamed Company',
-      role: data.role || 'Job Candidate',
+      company: data.company,
+      role: data.role,
       location: data.location || 'Remote',
       salary: data.salary || 'Competitive',
-      matchScore: Number(data.matchScore) || 75,
-      status: data.status || 'Saved', // Saved, Applied, Interviewing, Offer, Rejected
-      dateApplied: data.dateApplied || (data.status !== 'Saved' ? new Date().toISOString().split('T')[0] : null),
+      matchScore: data.matchScore === undefined ? 75 : Number(data.matchScore),
+      status,
+      dateApplied: data.dateApplied ?? (status !== 'Saved' ? new Date().toISOString().split('T')[0] : null),
       notes: data.notes || '',
       createdAt: new Date().toISOString()
     };

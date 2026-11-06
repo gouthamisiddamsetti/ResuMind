@@ -160,4 +160,67 @@ describe('ResuMind REST API Endpoints', () => {
     assert.strictEqual(deleteRes.statusCode, 200);
     assert.strictEqual(deleteRes.data.success, true);
   });
+
+  test('POST /api/applications validates required fields, status, and score', async () => {
+    const missingFields = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: { company: 'Figma' }
+    });
+    assert.strictEqual(missingFields.statusCode, 400);
+    assert.match(missingFields.data.error, /role is required/);
+
+    const invalidStatus = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: { company: 'Figma', role: 'Engineer', status: 'In Progress' }
+    });
+    assert.strictEqual(invalidStatus.statusCode, 400);
+    assert.match(invalidStatus.data.error, /status must be one of/);
+
+    const invalidScore = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: { company: 'Figma', role: 'Engineer', matchScore: 101 }
+    });
+    assert.strictEqual(invalidScore.statusCode, 400);
+    assert.match(invalidScore.data.error, /matchScore must be/);
+
+    const invalidDate = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: { company: 'Figma', role: 'Engineer', dateApplied: '2024-02-31' }
+    });
+    assert.strictEqual(invalidDate.statusCode, 400);
+    assert.match(invalidDate.data.error, /dateApplied must be/);
+  });
+
+  test('POST /api/applications accepts a zero score and normalizes form input', async () => {
+    const createRes = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: {
+        company: 'Figma',
+        role: 'Engineer',
+        matchScore: '0',
+        status: 'Saved'
+      }
+    });
+    assert.strictEqual(createRes.statusCode, 201);
+    assert.strictEqual(createRes.data.matchScore, 0);
+    assert.strictEqual(createRes.data.dateApplied, null);
+
+    await invokeRoute(`/api/applications/${createRes.data.id}`, { method: 'DELETE' });
+  });
+
+  test('PUT /api/applications/:id rejects unsupported and invalid updates', async () => {
+    const createRes = await invokeRoute('/api/applications', {
+      method: 'POST',
+      body: { company: 'Figma', role: 'Engineer' }
+    });
+
+    const invalidUpdate = await invokeRoute(`/api/applications/${createRes.data.id}`, {
+      method: 'PUT',
+      body: { status: 'In Progress', id: 'replacement-id' }
+    });
+    assert.strictEqual(invalidUpdate.statusCode, 400);
+    assert.match(invalidUpdate.data.error, /Unsupported application field/);
+
+    await invokeRoute(`/api/applications/${createRes.data.id}`, { method: 'DELETE' });
+  });
 });

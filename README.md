@@ -174,6 +174,8 @@ npm test
 | `DELETE` | `/api/applications/:id` | Delete tracked application |
 | `GET` | `/api/samples` | Retrieve pre-loaded sample resumes & job postings |
 
+`POST /api/applications` requires non-empty `company` and `role` strings. Optional fields are `location`, `salary`, `notes`, `status`, `matchScore` (0–100), and `dateApplied` (`YYYY-MM-DD` or `null`). Status must be `Saved`, `Applied`, `Interviewing`, `Offer`, or `Rejected`. `PUT /api/applications/:id` accepts one or more of these fields and rejects unsupported fields or invalid values with HTTP 400.
+
 ### Sample Analysis Request
 ```bash
 curl -X POST http://localhost:3000/api/analyze \
